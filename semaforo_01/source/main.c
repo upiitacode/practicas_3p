@@ -1,4 +1,3 @@
-/********/
 /*Este proyecto hace uso del Semaforo*/
 #include "TM4C123.h"                    // Device header
 #include "retarget_tm4c.h"
@@ -33,11 +32,12 @@ typedef struct{
 	int counter;
 	int signalN;
 	osMutexId* pMutex;
+	osThreadId* pSleepingThread;
 }semaphore;
 
-semaphore mutex = {0,signal_mutex_not_z,&SM_mutex_Id};
-semaphore empty = {N,signal_empty_not_z,&SM_empty_Id};
-semaphore full = {0,signal_full_not_z,&SM_full_Id};
+semaphore mutex = {1,signal_mutex_not_z,&SM_mutex_Id,NULL};
+semaphore empty = {N,signal_empty_not_z,&SM_empty_Id,NULL};
+semaphore full = {0,signal_full_not_z,&SM_full_Id,NULL};
 
 int main(){
 	UART0_init();
@@ -56,15 +56,14 @@ int main(){
 		//osMutexRelease(printLock_Id);
 		osThreadYield();
 	}
-	
 }
 
 /*Required functino prototypes*/
 /*Data sink and source functions*/
-int produce_item(void item);
+int produce_item(void);
 void consume_item(int item);
 /*semaphore control functions*/
-void down(semaphore*);
+void down(semaphore*,osThreadId);
 void up(semaphore*);
 /*buffer fucntions*/
 void enter_item(int*);
@@ -75,8 +74,8 @@ void producer(void const * args){
 	int item;
 	while(1){
 		item=produce_item();
-		down(&empty);
-		down(&mutex);
+		down(&empty,producerID);
+		down(&mutex,producerID);
 		enter_item(&item);
 		up(&mutex);
 		up(&full);
@@ -85,22 +84,35 @@ void producer(void const * args){
 /*Consumer thread fucntion*/
 void consumer(void const * args){
 	int item;
-	while(TRUE){
-		down(&full);
-		down(&mutex);
+	while(1){
+		down(&full,consumerID);
+		down(&mutex,consumerID);
 		remove_item(&item);
 		up(&mutex);
 		up(&empty);
 		consume_item(item);
 	}
-} 
+}
 
-void down(semaphore *pSemaphore){
-
+void down(semaphore *pSemaphore,osThreadId callerId){
+	osMutexWait(*(pSemaphore->pMutex),osWaitForever);//wait for mutex on this semaphore
+	while((pSemaphore->counter<=0)){
+		*(pSemaphore->pSleepingThread)=callerId;//Save treadId so this thread recives the wakeup signal 
+		osMutexRelease(*(pSemaphore->pMutex));//release mutex to avoid deadlock
+		osSignalWait(pSemaphore->signalN,osWaitForever);//wait  for wakeup signal
+		osMutexWait(*(pSemaphore->pMutex),osWaitForever);//wait for mutex on this semaphore
+	}
+	pSemaphore->counter--;//decrease coutner
+	osMutexRelease(*(pSemaphore->pMutex));//release mutex
 }
 
 void up(semaphore *pSemaphore){
-
+	osMutexWait(*(pSemaphore->pMutex),osWaitForever);//wait to get the mutex on this semaphore
+	if((pSemaphore->pSleepingThread)){//if valid pointer
+		osSignalSet(*(pSemaphore->pSleepingThread),pSemaphore->signalN);//send signal to sleeping thread
+	}
+	pSemaphore->counter++;//increase semaphore counter
+	osMutexRelease(*(pSemaphore->pMutex));//release mutex
 }
 
 void enter_item(int *pItem){
@@ -112,7 +124,7 @@ void remove_item(int *pItem){
 }
 
 int produce_item(void){
-	return 0
+	return 0;
 }
 
 void consume_item(int item){
