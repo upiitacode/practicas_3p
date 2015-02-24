@@ -15,29 +15,37 @@ osThreadId consumerID;
 osThreadDef(producer,osPriorityNormal,1,0);
 osThreadDef(consumer,osPriorityNormal,1,0);
 
-#define signal_empty_not_z 1
-#define signal_mutex_not_z 2
-#define signal_full_not_z 4
+#define signal_mutex_not_z (0x1<<2)
+#define signal_empty_not_z (0x1<<1)
+#define signal_full_not_z  (0x1<<3)
 
 //definicion del Semaphore
-osMutexDef(myMutex);
-osMutexId myMutex_Id;
-
+osMutexDef(SM_mutex);
+osMutexId SM_mutex_Id;
+osMutexDef(SM_empty);
+osMutexId SM_empty_Id;
+osMutexDef(SM_full);
+osMutexId SM_full_Id;
 
 /*Codigo del ejemplo de mutex*/
 #define N 100 /*numero  de ranuras en el buffer*/
-typedef int semaphore;
+typedef struct{
+	int counter;
+	int signalN;
+	osMutexId* pMutex;
+}semaphore;
 
-semaphore mutex = 1;
-semaphore empty = N;
-semaphore full = 0;
-
+semaphore mutex = {0,signal_mutex_not_z,&SM_mutex_Id};
+semaphore empty = {N,signal_empty_not_z,&SM_empty_Id};
+semaphore full = {0,signal_full_not_z,&SM_full_Id};
 
 int main(){
 	UART0_init();
 	osKernelInitialize();
 	//creamos MUTEX
-	myMutex_Id=osMutexCreate(osMutex(myMutex));  
+	SM_mutex_Id=osMutexCreate(osMutex(SM_mutex));
+	SM_empty_Id=osMutexCreate(osMutex(SM_empty));
+	SM_full_Id=osMutexCreate(osMutex(SM_full));
 	//creamos Threads
 	producerID=osThreadCreate(osThread(producer),NULL);
 	consumerID=osThreadCreate(osThread(consumer),NULL);
