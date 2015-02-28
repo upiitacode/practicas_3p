@@ -27,7 +27,7 @@ osMutexDef(SM_full);
 osMutexId SM_full_Id;
 
 /*Codigo del ejemplo de mutex*/
-#define N 20 /*numero  de ranuras en el buffer*/
+#define N 25 /*numero  de ranuras en el buffer*/
 typedef struct{
 	int counter;
 	int signalN;
@@ -102,8 +102,8 @@ void down(semaphore *pSemaphore,osThreadId *p_callerId){
 	if((pSemaphore->counter<=0)){
 		pSemaphore->pSleepingThread=p_callerId;//Save treadId so this thread recives the wakeup signal 
 		osMutexRelease(*(pSemaphore->pMutex));//release mutex to avoid deadlock
-		osSignalWait(pSemaphore->signalN,osWaitForever);//wait  for wakeup signal
-		osSignalClear(*p_callerId,pSemaphore->signalN);
+		osSignalClear(*p_callerId,pSemaphore->signalN);		
+		osSignalWait(pSemaphore->signalN,osWaitForever);//wait  for wakeup signal	
 		osMutexWait(*(pSemaphore->pMutex),osWaitForever);//wait for mutex on this semaphore
 	}
 	pSemaphore->counter--;//decrease coutner
@@ -144,6 +144,7 @@ int produce_item(void){
 	return mycounter;
 }
 
-void consume_item(int item){
-	printf("i=%d\n",item);
+void consume_item(int item){	
+	printf("i=%06u\n",item);
 }
+
