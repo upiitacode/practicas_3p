@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\include</IncludePath>
+              <IncludePath>..\retarget\mdk\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -416,12 +416,12 @@
             <File>
               <FileName>retarget.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\source\retarget.c</FilePath>
+              <FilePath>..\retarget\mdk\source\retarget.c</FilePath>
             </File>
             <File>
               <FileName>retarget_tm4c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\source\retarget_tm4c.c</FilePath>
+              <FilePath>..\retarget\mdk\source\retarget_tm4c.c</FilePath>
             </File>
           </Files>
         </Group>

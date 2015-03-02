@@ -261,7 +261,7 @@
       <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\source\retarget.c</PathWithFileName>
+      <PathWithFileName>..\retarget\mdk\source\retarget.c</PathWithFileName>
       <FilenameWithoutPath>retarget.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -274,7 +274,7 @@
       <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\source\retarget_tm4c.c</PathWithFileName>
+      <PathWithFileName>..\retarget\mdk\source\retarget_tm4c.c</PathWithFileName>
       <FilenameWithoutPath>retarget_tm4c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
